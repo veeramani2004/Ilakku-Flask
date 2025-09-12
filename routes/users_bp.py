@@ -3,7 +3,7 @@ from models.user import User
 from extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
-
+from flask_jwt_extended import jwt_required
 
 HTTP_NOT_FOUND = 404
 HTTP_CREATED = 201
@@ -89,3 +89,14 @@ def login_user():
         "token": token,
         "role": db_user.get("role"),
     }
+
+
+@users_bp.get("/user/<string:username>")
+@jwt_required()
+def get_user(username):
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return {"error": "User not found"}, 404
+
+    return user.to_dict(), 200
