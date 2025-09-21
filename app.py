@@ -1,23 +1,42 @@
-from config import Config
 from flask import Flask
-
-from extensions import db, jwt
-from sqlalchemy.sql import text
 from flask_cors import CORS
-
-# from routes.movies_bp import movies_bp
+from extensions import db, jwt
 from routes.users_bp import users_bp
+from routes.posts_bp import posts_bp
 from os import environ
+from routes.resources_bp import resources_bp
+from routes.comments_bp import comments_bp
+from routes.saved_posts_bp import saved_posts_bp
+from routes.follow_bp import follow_bp
+from routes.mentor_applications_bp import mentor_app_bp
+from routes.admin_mentor_bp import admin_mentor_bp
 
 app = Flask(__name__)
-app.config.from_object(Config)  # URL
-CORS(app)
+app.config.from_object("config.Config")
 
 
-db.init_app(app)  # Call
+# CORS(
+#     app,
+#     resources={r"/api/*": {"origins": "http://localhost:5173"}},
+#     supports_credentials=True,
+# )
+
+# Initialize DB and JWT
+# Initialize DB and JWT
+CORS(
+    app,
+    origins=["http://localhost:5173"],
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+)
+
+
+db.init_app(app)
 jwt.init_app(app)
 
 
+# JWT error handlers
 @jwt.unauthorized_loader
 def _unauth(e):
     return {"error": "missing/invalid token"}, 401
@@ -25,33 +44,21 @@ def _unauth(e):
 
 @jwt.expired_token_loader
 def _expired(h, p):
-    return ({"error": "token expired"}), 401
+    return {"error": "token expired"}, 401
 
 
-with app.app_context():
-    try:
-        result = db.session.execute(text("SELECT 1")).fetchall()
-        print("Connection successful:", result)
-    except Exception as e:
-        print("Error connecting to the database:", e)
+# Register blueprints
 
-
-@app.get("/")
-def hello_world():
-    print("Super")
-    return "<h1>Hello, World! 🎊🍊 🌽</h1>"
-
-
-# app.register_blueprint(movies_bp, url_prefix="/api/movies")
+app.register_blueprint(mentor_app_bp, url_prefix="/api/mentor-applications")
+app.register_blueprint(admin_mentor_bp, url_prefix="/api/admin/mentor")
+app.register_blueprint(follow_bp, url_prefix="/api/follows")
+app.register_blueprint(comments_bp, url_prefix="/api/comments")
 app.register_blueprint(users_bp, url_prefix="/api/users")
+app.register_blueprint(posts_bp, url_prefix="/api/posts")
+app.register_blueprint(resources_bp, url_prefix="/api/resources")
+app.register_blueprint(saved_posts_bp, url_prefix="/api/saved-posts")
 
-# Deployment Steps
-# 1. main.py -> app.py
-# 2. As below
-# 3. Install gunicorn (freeze, commit, push)
-## Render
-# 4. gunicorn app:app
-# 5. Follow as readme
+
 if __name__ == "__main__":
-    port = environ.get("PORT", 5000)  # Auto assign port number (render.com)
-    app.run(host="0.0.0.0", port=port, debug=True)  # Any ip address is accepted
+    port = int(environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)

@@ -14,4 +14,4 @@ class Config:
 
     JWT_SECRET_KEY = environ.get("SECRET_KEY")
     JWT_TOKEN_LOCATION = ["headers"]
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=90)
