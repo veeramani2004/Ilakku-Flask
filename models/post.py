@@ -35,6 +35,7 @@ class Post(db.Model):
                 "name": self.author.name,
                 "bio": self.author.bio,
                 "profilePicture": self.author.profile_picture,
-                "role": self.author.positions,
+                "positions": self.author.positions,
+                "role": self.author.role,
             },
         }

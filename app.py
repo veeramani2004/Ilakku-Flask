@@ -23,9 +23,16 @@ app.config.from_object("config.Config")
 
 # Initialize DB and JWT
 # Initialize DB and JWT
+# CORS(
+#     app,
+#     origins=["http://localhost:5173"],
+#     supports_credentials=True,
+#     allow_headers=["Content-Type", "Authorization"],
+#     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+# )
 CORS(
     app,
-    origins=["http://localhost:5173"],
+    resources={r"/api/*": {"origins": ["http://localhost:5173"]}},
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
